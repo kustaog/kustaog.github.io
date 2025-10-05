@@ -17,8 +17,11 @@ document.body.prepend(canvas);
 
 const ctx = canvas.getContext('2d');
 let particles = [];
-const numParticles = 140;
-const maxLineDist = 130;
+// Responsive settings (computed in resize)
+let numParticles = 0;
+let maxLineDist = 130;
+let particleScale = 1; // scales radius and speed
+let devicePixelRatioUsed = 1;
 const colors = [
   '#ffffff',
   '#b3c6ff',
@@ -28,32 +31,65 @@ const colors = [
 ];
 
 function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  // Support high DPI for crisp particles
+  const dpr = Math.max(1, window.devicePixelRatio || 1);
+  devicePixelRatioUsed = dpr;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  canvas.width = Math.round(w * dpr);
+  canvas.height = Math.round(h * dpr);
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  // reset transform then scale for DPR
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.scale(dpr, dpr);
+
+  // Compute responsive parameters based on viewport area
+  const area = w * h;
+  // density tuned so typical desktop ~120-160 particles
+  const density = 0.00013;
+  numParticles = Math.max(18, Math.min(160, Math.round(area * density)));
+
+  // scale factors based on smaller screens (reduce visuals)
+  const minDim = Math.min(w, h);
+  particleScale = Math.max(0.6, Math.min(1.25, minDim / 800));
+  maxLineDist = Math.round(Math.max(60, Math.min(160, minDim * 0.16)));
 }
+
+// Debounced resize to avoid thrashing
+let resizeTimer = null;
 function handleResize() {
-  resizeCanvas();
-  createParticles();
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    resizeCanvas();
+    createParticles();
+  }, 120);
 }
 window.addEventListener('resize', handleResize);
-handleResize();
+// initial setup
+resizeCanvas();
+createParticles();
 
 function createParticles() {
   particles = [];
+  const w = window.innerWidth;
+  const h = window.innerHeight;
   for (let i = 0; i < numParticles; i++) {
+    // position in CSS pixels (canvas is scaled already)
     particles.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.32,
-      vy: (Math.random() - 0.5) * 0.32,
-      radius: 0.7 + Math.random() * 0.7,
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * (0.32 * particleScale),
+      vy: (Math.random() - 0.5) * (0.32 * particleScale),
+      radius: (0.6 + Math.random() * 0.9) * particleScale,
       color: colors[Math.floor(Math.random() * colors.length)]
     });
   }
 }
 
 function drawParticles() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // clear in CSS pixels (ctx is scaled to DPR), use CSS size because ctx is scaled
+  ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
   // Líneas sutiles entre partículas cercanas
   for (let i = 0; i < particles.length; i++) {
     for (let j = i + 1; j < particles.length; j++) {
@@ -67,7 +103,9 @@ function drawParticles() {
         grad.addColorStop(0, particles[i].color);
         grad.addColorStop(1, particles[j].color);
         // Opacidad suave según distancia
-        const alpha = 0.18 * (1 - dist / maxLineDist);
+        // Reduce line alpha on small screens for clarity and perf
+        const screenFactor = Math.min(1, particleScale + 0.1);
+        const alpha = 0.18 * (1 - dist / maxLineDist) * screenFactor;
         ctx.beginPath();
         ctx.strokeStyle = grad;
         ctx.globalAlpha = alpha;
@@ -85,8 +123,9 @@ function drawParticles() {
     ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI);
     ctx.fillStyle = p.color;
     ctx.shadowColor = p.color;
-    ctx.shadowBlur = 8;
-    ctx.globalAlpha = 0.82;
+    // reduce shadow on small screens for performance
+    ctx.shadowBlur = Math.max(2, Math.round(6 * particleScale));
+    ctx.globalAlpha = Math.min(0.92, 0.82 * (1 + (particleScale - 1) * 0.5));
     ctx.fill();
     ctx.globalAlpha = 1;
     ctx.shadowBlur = 0;
@@ -94,20 +133,29 @@ function drawParticles() {
 }
 
 function updateParticles() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
   for (const p of particles) {
     p.x += p.vx;
     p.y += p.vy;
-    // Movimiento más fluido y rebote
+    // Movimiento más fluido y rebote dentro de CSS pixel bounds
     if (p.x < 0) { p.x = 0; p.vx *= -1; }
-    if (p.x > canvas.width) { p.x = canvas.width; p.vx *= -1; }
+    if (p.x > w) { p.x = w; p.vx *= -1; }
     if (p.y < 0) { p.y = 0; p.vy *= -1; }
-    if (p.y > canvas.height) { p.y = canvas.height; p.vy *= -1; }
+    if (p.y > h) { p.y = h; p.vy *= -1; }
   }
 }
 
+// Respect user preference for reduced motion
+const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 function animate() {
-  updateParticles();
-  drawParticles();
+  if (!prefersReduced) {
+    updateParticles();
+    drawParticles();
+  } else {
+    // Minimal static rendering when reduced motion is requested
+    drawParticles();
+  }
   requestAnimationFrame(animate);
 }
 animate();
