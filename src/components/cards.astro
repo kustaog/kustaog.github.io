@@ -1,4 +1,5 @@
-<div id="bento-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-[90%] md:w-[70%] lg:w-[50%] mx-auto my-20 pb-20 min-h-screen">
+<!-- Desktop/Tablet grid -->
+<div id="bento-grid" class="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 gap-4 w-[90%] md:w-[70%] lg:w-[50%] mx-auto my-20 pb-20 min-h-[100dvh]">
     <!-- Tarjeta "¿Quién Soy?" -->
   <div class="bento-item sm:col-span-2 sm:row-span-2 rounded-2xl text-white bg-cover bg-no-repeat bg-left-center relative p-6 pb-6 overflow-hidden group">
       <img src="/ojo.webp" alt="¿Quién Soy?" class="absolute inset-0 w-full h-full object-cover rounded-2xl z-0" loading="lazy" />
@@ -48,4 +49,43 @@
       </h1>
       </a>
     </div>
+  </div>
+
+  <!-- Mobile grid -->
+  <div id="bento-grid-mobile" class="grid sm:hidden grid-cols-1 gap-4 w-[92%] mx-auto my-10 pb-16">
+    <!-- ¿Quién Soy? (mobile) -->
+    <div class="rounded-2xl text-white bg-cover bg-center relative overflow-hidden h-44">
+      <img src="/ojo.webp" alt="¿Quién Soy?" class="absolute inset-0 w-full h-full object-cover rounded-2xl z-0" loading="lazy" />
+      <div class="absolute inset-0 bg-black/45 rounded-2xl"></div>
+      <div class="relative z-10 h-full w-full flex items-center justify-center px-4">
+        <h3 class="text-2xl font-bold text-[#f2f23f] text-center">¿Quién Soy?</h3>
+      </div>
+    </div>
+
+    <!-- Proyectos (mobile) -->
+    <a href="/404" class="rounded-2xl text-white bg-cover bg-center relative overflow-hidden h-44 block">
+      <img src="/ola.webp" alt="Proyectos" class="absolute inset-0 w-full h-full object-cover rounded-2xl z-0" loading="lazy" />
+      <div class="absolute inset-0 bg-black/45 rounded-2xl"></div>
+      <div class="relative z-10 h-full w-full flex items-center justify-center px-4">
+        <h3 class="text-xl font-bold">Proyectos</h3>
+      </div>
+    </a>
+
+    <!-- Herramientas & Tecnologías (mobile) -->
+    <a href="/404" class="rounded-2xl text-white bg-cover bg-center relative overflow-hidden h-44 block">
+      <img src="/tiempo.webp" alt="Herramientas y Tecnologías" class="absolute inset-0 w-full h-full object-cover rounded-2xl z-0" loading="lazy" />
+      <div class="absolute inset-0 bg-black/45 rounded-2xl"></div>
+      <div class="relative z-10 h-full w-full flex items-center justify-center px-4 text-center">
+        <h3 class="text-xl font-bold">Herramientas & Tecnologías</h3>
+      </div>
+    </a>
+
+    <!-- Certificaciones & Cursos (mobile) -->
+    <a href="/certificaciones&cursos" class="rounded-2xl text-white bg-cover bg-center relative overflow-hidden h-44 block">
+      <img src="/ajedrez.webp" alt="Certificaciones y Cursos" class="absolute inset-0 w-full h-full object-cover rounded-2xl z-0" loading="lazy" />
+      <div class="absolute inset-0 bg-black/45 rounded-2xl"></div>
+      <div class="relative z-10 h-full w-full flex items-center justify-center px-4 text-center">
+        <h3 class="text-xl font-bold">Certificaciones & Cursos</h3>
+      </div>
+    </a>
   </div>
